@@ -5,6 +5,8 @@ A Simple MMBot script which will scan bitbucket and return details of any new co
 
 Currently out of the box it will look back 120 commits only.  In the future I might make this configurable.
 
+Please see the [MMBot website](https://github.com/mmbot/mmbot) for more info on what MMBot is (if you don't know already), and a big thanks to [PeteGoo](https://twitter.com/petegoo) for building MMBot :)
+
 Installation
 ------------
 

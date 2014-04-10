@@ -1,0 +1,16 @@
+/src/**/bin/
+/src/**/obj/
+*.log
+logs/
+_ReSharper*/
+output/
+release/
+*.suo
+*.user
+*.cache
+*.gpState
+/temp
+/release
+/reports
+/src/TestResults
+src/packages

@@ -6,15 +6,22 @@ namespace DevDefined.Bitbucket.MMBot.ChangeScanner
     {
         readonly Func<long, CommentMeta> _readMeta;
         readonly Action<long, CommentMeta> _writeMeta;
-        object _globalLock = new object();
+        static readonly object _globalLock = new object();
 
         public CallbackCommentMetaStore(Func<long, CommentMeta> readMeta, Action<long, CommentMeta> writeMeta)
         {
-            _readMeta = readMeta;
+			// turns out brain out of the box doesn't deal well with concurrency... so we globally lock all reads and writes...
+
+	        _readMeta = (id) =>
+	        {
+		        lock (_globalLock)
+		        {
+			        return readMeta(id);
+		        }
+	        };
             
             _writeMeta = (id, meta) =>
             {
-                // turns out brain out of the box doesn't deal well with concurrency...
                 lock (_globalLock)
                 {
                     writeMeta(id, meta);

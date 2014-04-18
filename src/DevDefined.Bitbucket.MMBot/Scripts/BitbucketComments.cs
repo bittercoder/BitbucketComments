@@ -18,7 +18,8 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
                 string repoSlug = msg.Match[2];
                 string username = robot.GetConfigVariable("MMBOT_BITBUCKET_USERNAME");
                 string password = robot.GetConfigVariable("MMBOT_BITBUCKET_PASSWORD");
-                
+                bool useFormatting = (robot.GetConfigVariable("MMBOT_BITBUCKET_USEHIPCHATFORMATTING") ?? "False").Equals("true", StringComparison.OrdinalIgnoreCase);
+
                 if (username == null || password == null)
                 {
                     msg.Send("MMBOT_BITBUCKET_USERNAME or MMBOT_BITBUCKET_PASSWORD is not currently set in the mmbot .ini file");
@@ -26,6 +27,8 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
                 }
 
                 Func<long, string> keyFunc = id => string.Format("bitbucket.{0}.{1}.comment.{2}", owner, repoSlug, id);
+
+                bool useHipchatFormatSpecifiers = (robot.GetAdapter("HipChatAdapter") != null && useFormatting);
 
                 var metaStore = new CallbackCommentMetaStore(id => robot.Brain.Get<CommentMeta>(keyFunc(id)).Result, (id, meta) => robot.Brain.Set(keyFunc(id), meta).Wait());
 
@@ -35,7 +38,7 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
 
                 IEnumerable<CommentView> comments = scanner.ScanForNewComments(owner, repoSlug);
 
-                foreach (var message in comments.OrderByDescending(x => x.Comment.UpdatedOn).Select(c=>RenderCommentMessage(c,repoSlug)))
+                foreach (var message in comments.OrderByDescending(x => x.Comment.UpdatedOn).Select(c => RenderCommentMessage(c, repoSlug, useHipchatFormatSpecifiers)))
                 {
                     msg.Send(message);
                 }
@@ -47,7 +50,7 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
             yield return "mmbot bitbucket comments check <owner> <repoSlug> - Will check for new and updated comments in bitbucket and display links to them.";
         }
 
-        string RenderCommentMessage(CommentView commentView, string repoSlug)
+        string RenderCommentMessage(CommentView commentView, string repoSlug, bool useHipchatFormatSpecifiers)
         {
             string sentiment = "has commented on";
             
@@ -56,9 +59,11 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
                 sentiment = "has updated their comment on";                
             }
 
-            return string.Format("{0} {5} (bitbucket) commit #{1}\r\n\r\n{2}\r\n\r\n{3}\r\n\r\nrepository: {4}",
+            string formatSpecifiers = (useHipchatFormatSpecifiers ? (commentView.IsUpdate ? "::purple ::notify ::from bitbucket " : "::green ::notify ::from bitbucket ") : "");
+
+            return string.Format("{6}{0} {5} (bitbucket) commit #{1}\r\n\r\n{2}\r\n\r\n{3}\r\n\r\nrepository: {4}",
                 commentView.Comment.User.DisplayName, commentView.Hash.Substring(0,10), commentView.Comment.Content.Raw.TruncateWithEllipsis(256),
-                commentView.Comment.Links["html"].Href, repoSlug, sentiment);
+                commentView.Comment.Links["html"].Href, repoSlug, sentiment, formatSpecifiers);
         }
     }
 }

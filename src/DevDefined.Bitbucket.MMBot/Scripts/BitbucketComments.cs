@@ -149,8 +149,8 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
             foreach (var user in tuple.Item1)
             {
                 string formatSpecifiers = useHipchatFormatSpecifiers ? "::green ::notify ::from " + user.DisplayName : "";
-                yield return string.Format("{0}@{1} has approved (bitbucket) commit #{2} (successful)\r\n\r\n{3}\r\n\r\n{4}\r\n\r\ncommit author:{4}\r\nrepository: {5}", formatSpecifiers, user.UserName, commit.Hash,
-                   commit.Message, commit.Links["html"].Href, commit.Author.User.UserName, repoSlug);
+                yield return string.Format("{0}{1} has approved (bitbucket) commit #{2} (successful)\r\n\r\n{3}\r\n\r\n{4}\r\n\r\ncommit author:{5}\r\nrepository: {6}", formatSpecifiers, Mention(user), commit.Hash,
+                   commit.Message, commit.Links["html"].Href, Mention(commit.Author.User), repoSlug);
             }
         }
 
@@ -165,23 +165,26 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
 
             string formatSpecifiers = (useHipchatFormatSpecifiers ? (commentView.IsUpdate ? "::purple ::notify ::from bitbucket " : "::green ::notify ::from bitbucket ") : "");
 
-            return string.Format("{6}@{0} {5} (bitbucket) commit #{1}\r\n\r\n{2}\r\n\r\n{3}\r\n\r\n\r\n\r\ncommit author: @{7}\r\nrepository: {4}",
-                commentView.Comment.User.UserName, commentView.Hash.Substring(0,10), commentView.Comment.Content.Raw.TruncateWithEllipsis(256),
-                commentView.Comment.Links["html"].Href, repoSlug, sentiment, formatSpecifiers,commentView.CommitAuthor);
+            return string.Format("{6}{0} {5} (bitbucket) commit #{1}\r\n\r\n{2}\r\n\r\n{3}\r\n\r\n\r\n\r\ncommit author: {7}\r\nrepository: {4}",
+                Mention(commentView.Comment.User), commentView.Hash.Substring(0,10), commentView.Comment.Content.Raw.TruncateWithEllipsis(256),
+                commentView.Comment.Links["html"].Href, repoSlug, sentiment, formatSpecifiers, Mention(commentView.CommitAuthor));
         }
         
         string RenderApprovalStatistics(CommitStatistics statistics, string repoSlug, TimeSpan span, bool useHipchatFormatSpecifiers)
         {
             StringBuilder builder = new StringBuilder();
 
-            if (useHipchatFormatSpecifiers) builder.Append("::html ::yellow ");
+            if (useHipchatFormatSpecifiers) builder.Append("::yellow ");
 
             foreach (var stat in statistics.TotalApprovalsByUser.OrderByDescending(x => x.Item2))
             {
-                builder.AppendFormat("\r\n@{0}: approved {1} commits in the last {2} days\r\n", stat.Item1.UserName, stat.Item2, (int)span.TotalDays);                
+                string name = stat.Item1.DisplayName;
+                if (useHipchatFormatSpecifiers) name = "<b>" + name + "</b>";
+                
+                builder.AppendFormat("\r\n<b>{0}</b>: approved {1} commits in the last {2} days", name, stat.Item2, (int)span.TotalDays);                
             }
 
-            builder.AppendFormat("\r\n\r\repository: {0}", repoSlug);
+            builder.AppendFormat("\r\n\r\n repository: {0}", repoSlug);
 
             return builder.ToString();
         }
@@ -190,8 +193,18 @@ namespace DevDefined.Bitbucket.MMBot.Scripts
         {
             string formatSpecifiers = useHipchatFormatSpecifiers ? "::red ::notify ::from bitbucket " : "";
 
-            return string.Format("{0}(bitbucket) commit #{1} has not been approved yet (philosoraptor)\r\n\r\n{2}\r\n\r\n{3}\r\n\r\ncommit author: @{4}\r\nrepository: {5}", formatSpecifiers, commit.Hash, commit.Message.TruncateWithEllipsis(256), commit.Links["html"].Href, 
-                commit.Author.User.UserName, repoSlug);
+            return string.Format("{0}(bitbucket) commit #{1} has not been approved yet (philosoraptor)\r\n\r\n{2}\r\n\r\n{3}\r\n\r\ncommit author: {4}\r\nrepository: {5}", 
+                formatSpecifiers, commit.Hash, commit.Message.TruncateWithEllipsis(256), commit.Links["html"].Href, Mention(commit.Author.User), repoSlug);
+        }
+
+        string Mention(User user)
+        {
+            return user.DisplayName;
+        }
+
+        string Mention(string username)
+        {
+            return username;
         }
     }
 }

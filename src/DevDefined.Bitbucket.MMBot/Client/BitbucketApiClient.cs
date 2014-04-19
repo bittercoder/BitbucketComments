@@ -54,6 +54,13 @@ namespace DevDefined.Bitbucket.MMBot.Client
             return await ReadTypedResponse<CommentList>(response);
         }
 
+        public async Task<CommitDetails> GetDetailsForCommit(Commit commit)
+        {
+            string url = commit.Links["self"].Href;
+            HttpResponseMessage response = await client.GetAsync(url);
+            return await ReadTypedResponse<CommitDetails>(response);
+        }
+
         async Task<T> ReadTypedResponse<T>(HttpResponseMessage response)
             where T : IHaveETag
         {

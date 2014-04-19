@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +10,6 @@ namespace DevDefined.Bitbucket.MMBot.ChangeScanner
 {
     public class CommentChangeScanner
     {
-        public const int MaxCommitsToCheck = 120;
         readonly IBitbucketApiClient _client;
         readonly ICommentMetaStore _store;
 
@@ -19,9 +19,9 @@ namespace DevDefined.Bitbucket.MMBot.ChangeScanner
             _store = store;
         }
 
-        public IEnumerable<CommentView> ScanForNewComments(string owner, string repoSlug, int maxCommitsToCheck = MaxCommitsToCheck)
+        public IEnumerable<CommentView> ScanForNewComments(TimeSpan timespan, string owner, string repoSlug)
         {
-            List<Commit> recentCommits = _client.GetAllCommits(owner, repoSlug).Take(maxCommitsToCheck).ToList();
+            List<Commit> recentCommits = _client.GetAllCommits(owner, repoSlug).InTheLast(timespan).ToList();
 
             var queue = new ConcurrentQueue<CommentView>();
 
@@ -34,7 +34,7 @@ namespace DevDefined.Bitbucket.MMBot.ChangeScanner
                         StorageResult result = ChangedOrNew(comment, commit);
                         if (result != StorageResult.Exists)
                         {
-                            queue.Enqueue(new CommentView {Comment = comment, CommitLinks = commit.Links, Hash = commit.Hash, IsUpdate = (result == StorageResult.Updated)});
+                            queue.Enqueue(new CommentView {CommitAuthor = commit.Author.User.UserName, Comment = comment, CommitLinks = commit.Links, Hash = commit.Hash, IsUpdate = (result == StorageResult.Updated)});
                         }
                     }
                 });

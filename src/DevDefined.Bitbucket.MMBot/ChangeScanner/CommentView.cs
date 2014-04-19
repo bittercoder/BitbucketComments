@@ -17,5 +17,8 @@ namespace DevDefined.Bitbucket.MMBot.ChangeScanner
         
         [JsonProperty("comment")]
         public Comment Comment { get; set; }
+        
+        [JsonProperty("author")]
+        public string CommitAuthor { get; set; }
     }
 }

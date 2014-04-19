@@ -10,5 +10,6 @@ namespace DevDefined.Bitbucket.MMBot.Client
         IEnumerable<Commit> GetAllCommits(string owner, string repoSlug);
         Task<CommitsList> NextPage(CommitsList current);
         Task<CommentList> CommentsFor(Commit commit);
+        Task<CommitDetails> GetDetailsForCommit(Commit commit);
     }
 }

@@ -55,6 +55,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApprovalScanner\ApprovalMeta.cs" />
+    <Compile Include="ApprovalScanner\CommitApprovalScanner.cs" />
+    <Compile Include="ApprovalScanner\CallbackCommitApprovalMetaStore.cs" />
+    <Compile Include="ApprovalScanner\CommitInfo.cs" />
+    <Compile Include="ApprovalScanner\CommitStatistics.cs" />
+    <Compile Include="ApprovalScanner\ICommitApprovalMetaStore.cs" />
+    <Compile Include="Client\CommitExtensions.cs" />
     <Compile Include="Scripts\BitbucketComments.cs" />
     <Compile Include="ChangeScanner\CallbackCommentMetaStore.cs" />
     <Compile Include="ChangeScanner\CommentChangeScanner.cs" />
@@ -73,7 +80,11 @@
     <None Include="DevDefined.Bitbucket.MMBot.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>COPY $(TargetDir)\DevDefined.Bitbucket.MMBot.* C:\mmbot\packages\DevDefined.Bitbucket.MMBot.0.9.0.2\lib\net45\</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

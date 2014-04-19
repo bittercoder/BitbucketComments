@@ -89,7 +89,7 @@ namespace DevDefined.Bitbucket.MMBot.Models
     public class CommitsList : ListResource<Commit>
     {
     }
-
+    
     public class Commit : Resource
     {
         [JsonProperty("hash")]
@@ -139,5 +139,23 @@ namespace DevDefined.Bitbucket.MMBot.Models
     {
         [JsonProperty("hash")]
         public string Hash { get; set; }
+    }
+
+    public class Participant
+    {
+        [JsonProperty("role")]
+        public string Role { get; set; }
+
+        [JsonProperty("user")]
+        public User User { get; set; }
+        
+        [JsonProperty("approved")]
+        public bool? Approved { get; set; }
+    }
+
+    public class CommitDetails : Commit
+    {
+        [JsonProperty("participants")]
+        public Participant[] Participants { get; set; }
     }
 }
